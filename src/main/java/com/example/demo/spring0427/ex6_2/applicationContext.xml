@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:annotation-config />
+    <bean id="targetBean" class="com.example.demo.spring0427.ex6_2.MessageBeanKo" scope="prototype">
+        <property name="name"><value>Spring</value></property>
+    </bean>
+    <bean id = "loggingAdvice" class="com.example.demo.spring0427.ex6_2.LoggingAdvice"/>
+    <bean id = "proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target" ref = "targetBean"/>
+        <property name="interceptorNames"><list><value>helloAdviosr</value></list></property>
+    </bean>
+    <bean id="helloAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <property name="advice" ref="loggingAdvice"/>
+        <property name="pointcut">
+            <bean class="org.springframework.aop.support.JdkRegexpMethodPointcut">
+                <property name="pattern"><value>.*sayHello.*</value></property>
+            </bean>
+        </property>
+    </bean>
+</beans>

@@ -1,0 +1,12 @@
+package com.example.demo.spring0413.ex5_5;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
+@Configuration
+@ComponentScan(basePackages = {"com.example.demo.spring0413"})
+public class JavaConfig {
+
+}

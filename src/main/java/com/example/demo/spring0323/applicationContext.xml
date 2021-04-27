@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="operatorBean" class="com.example.demo.spring0323.PlusOp" scope="prototype">
+        <property name="operand1" value="3"></property>
+        <property name="operand2" value="5"></property>
+    </bean>
+
+</beans>
