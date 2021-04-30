@@ -12,12 +12,15 @@ import java.util.Scanner;
 public class LibraryManagementSystem implements LibraryManaging, UserManaging, InitializingBean, DisposableBean {
     ArrayList<Book> library;
     ArrayList<User> userList;
+    User currentUser;
+    int userIndex;
     Scanner sc;
     FileHandler fh;
     Boolean loop = true;
     int currentMenu;
     public void setUserList(ArrayList<User> userList) { this.userList = userList; }
     public void setLibrary(ArrayList<Book> library) { this.library = library;  }
+    public void setCurrentUser(User user){ this.currentUser = user; }
     public void setSc(Scanner sc) {
         this.sc = sc;
     }
@@ -32,7 +35,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         switch (selected){
             case 1:
                 if (userLogin()){
-                    System.out.println("로그인 성공!");
+                    System.out.println("로그인 성공, 어서오세요 " + currentUser.name + " 님 !");
                     popLibraryMenu();
                     break;
                 }else{
@@ -131,19 +134,69 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         }
         return result;
     }
+    public int searchingByNum(String num){
+        int result = -1;
+        for(int i = 0; i < library.size();i++ ) {
+            if (library.get(i).ID.contains(num)) {
+                result = i;
+            }
+        }
+        return result;
+    }
     @Override
     public void lending() {
+        int menu;
         System.out.println("----------------도서대여 서비스입니다.----------------");
-
+        System.out.println("현재 빌리신 책은 " + currentUser.bookID.size() + " 개 입니다.");
+        System.out.println("1.도서대여\t2.대여가능횟수조회");
+        menu = sc.nextInt();
+        switch (menu){
+            case 1:
+                String bookNum;
+                System.out.println("빌리실 책의 번호를 입력해주세요 : ");
+                bookNum = sc.next();
+                int index = searchingByNum(bookNum);
+                if(index == -1){
+                    System.out.println("잘못된 번호입니다.");
+                    popLibraryMenu();
+                    break;
+                }else{
+                    if(library.get(index).usable){
+                        int confirm;
+                        System.out.println("대여 가능한 책입니다. 빌리시겠습니까 ?");
+                        System.out.println("1.확인\t2.취소");
+                        confirm = sc.nextInt();
+                        if(confirm == 1){
+                            System.out.println("대여완료!");
+                            library.get(index).usable = false;
+                            userList.get(userIndex).bookID.add(library.get(index).title);
+                            popLibraryMenu();
+                            break;
+                        }else{
+                            System.out.println("취소되었습니다.");
+                            popLibraryMenu();
+                            break;
+                        }
+                    }else{
+                        System.out.println("이미 대여된 책입니다.");
+                        popLibraryMenu();
+                        break;
+                    }
+                }
+        }
     }
     @Override
     public void returning() {
+        int menu;
         System.out.println("----------------도서반납 서비스입니다.----------------");
+        System.out.println("1.도서검색\t2.전체보기\t3.대여가능도서보기");
 
     }
     @Override
     public void reserving() {
+        int menu;
         System.out.println("----------------도서예약 서비스입니다.----------------");
+        System.out.println("1.도서검색\t2.전체보기\t3.대여가능도서보기");
 
     }
     @Override
@@ -153,7 +206,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         String name;
         String phoneNum;
         String address;
-        Optional<String> owner = null;
+        ArrayList<String> owner = new ArrayList<>();
         System.out.print("\n아이디를 입력해주세요. : ");
         ID = sc.next();
         System.out.print("비밀번호를 입력해주세요. : ");
@@ -182,7 +235,11 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     @Override
     public Boolean getDB(String userID,String userPwd){
         for(int i = 0; i < userList.size(); i++) {
-            if (userList.get(i).ID.equals(userID) && userList.get(i).password.equals(userPwd)) return true;
+            if (userList.get(i).ID.equals(userID) && userList.get(i).password.equals(userPwd)) {
+                setCurrentUser(userList.get(i));
+                userIndex = i;
+                return true;
+            }
         }
         return false;
     }

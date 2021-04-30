@@ -3,6 +3,7 @@ package com.example.demo.middleProject;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Component
@@ -13,9 +14,9 @@ public class User {
     String name;
     String phoneNum;
     String address;
-    Optional<String> bookID;
+    ArrayList<String> bookID;
 
-    public User(String ID, String password, String name, String phoneNum, String address, Optional<String> bookID) {
+    public User(String ID, String password, String name, String phoneNum, String address, ArrayList<String> bookID) {
         this.ID = ID;
         this.password = password;
         this.name = name;
@@ -24,9 +25,9 @@ public class User {
         this.bookID = bookID;
     }
 
-    public Optional<String> getBook() { return bookID; }
+    public ArrayList<String> getBook() { return bookID; }
 
-    public void setBook(Optional<String> bookID) { this.bookID = bookID; }
+    public void setBook(ArrayList<String> bookID) { this.bookID = bookID; }
 
     public String getID() {
         return ID;

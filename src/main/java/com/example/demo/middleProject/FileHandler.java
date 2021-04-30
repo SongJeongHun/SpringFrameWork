@@ -18,7 +18,7 @@ public class FileHandler {
         try{
             fw = new FileWriter(target,true);
             bw = new BufferedWriter(fw);
-            bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + user.bookID + "/");
+            bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + user.bookID + "/" + "[]");
             bw.newLine();
             bw.flush();
             System.out.println("회원가입 완료!");
@@ -30,7 +30,7 @@ public class FileHandler {
         }
     }
     public ArrayList<User> getUserList(){
-        ArrayList<User> userList = new ArrayList<User>();
+        ArrayList<User> userList = new ArrayList<>();
         try {
             fr = new FileReader(target);
             br = new BufferedReader(fr);
@@ -38,10 +38,7 @@ public class FileHandler {
             while((readLine = br.readLine()) != null){
                 String arr[] = readLine.split("/");
                 if (arr.length > 0){
-                    if (arr[5] == "null"){
-                        arr[5] = null;
-                    }
-                    User user = new User(arr[0],arr[1],arr[2],arr[3],arr[4], Optional.ofNullable(arr[5]));
+                    User user = new User(arr[0],arr[1],arr[2],arr[3],arr[4], compresString(arr[5]));
                     userList.add(user);
                 }
             }
@@ -101,8 +98,8 @@ public class FileHandler {
     }
     public ArrayList<String> compresString(String str){
         ArrayList<String> stringList = new ArrayList<>();
-        str.replace("[","");
-        str.replace("]","");
+        str = str.replace("[","");
+        str = str.replace("]","");
         String arr[] = str.split("'");
         for(int i = 0; i < arr.length; i++){
             stringList.add(arr[i]);
