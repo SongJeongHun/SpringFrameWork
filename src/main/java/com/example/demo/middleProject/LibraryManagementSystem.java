@@ -137,7 +137,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     public int searchingByNum(String num){
         int result = -1;
         for(int i = 0; i < library.size();i++ ) {
-            if (library.get(i).ID.contains(num)) {
+            if (library.get(i).ID.equals(num)) {
                 result = i;
             }
         }
@@ -152,6 +152,11 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         menu = sc.nextInt();
         switch (menu){
             case 1:
+                if(currentUser.bookID.size() >= 5){
+                    System.out.println("5권 이상은 빌릴수 없습니다. 반납후 이용해주세요.");
+                    popLibraryMenu();
+                    break;
+                }
                 String bookNum;
                 System.out.println("빌리실 책의 번호를 입력해주세요 : ");
                 bookNum = sc.next();
@@ -170,6 +175,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                             System.out.println("대여완료!");
                             library.get(index).usable = false;
                             userList.get(userIndex).bookID.add(library.get(index).title);
+                            currentUser = userList.get(userIndex);
                             popLibraryMenu();
                             break;
                         }else{
@@ -183,6 +189,10 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                         break;
                     }
                 }
+            case 2:
+                System.out.println(5 - currentUser.bookID.size() + " 권 대여 가능합니다.");
+                popLibraryMenu();
+                break;
         }
     }
     @Override
