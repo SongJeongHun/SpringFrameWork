@@ -34,13 +34,15 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 if (userLogin()){
                     System.out.println("로그인 성공!");
                     popLibraryMenu();
-                    return;
+                    break;
                 }else{
                     System.out.println("로그인 실패!");
                     popUserMenu();
+                    break;
                 }
             case 2:
                 userJoin();
+                break;
             case 0:
                 loop = false;
         }
@@ -53,19 +55,19 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         switch (currentMenu){
             case 1:
                 searching();
-                return;
+                break;
             case 2:
                 lending();
-                return;
+                break;
             case 3:
                 returning();
-                return;
+                break;
             case 4:
                 reserving();
-                return;
+                break;
             case 0:
                 loop = false;
-                return;
+                break;
         }
     }
     @Override
@@ -78,10 +80,56 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     }
     @Override
     public void searching() {
+        int menu;
         System.out.println("----------------도서검색 서비스입니다.----------------");
-        for(int i = 0; i < library.size(); i ++){
-            System.out.println(library.get(i).title + "/" + library.get(i).author);
+        System.out.println("1.도서검색\t2.전체보기\t3.대여가능도서보기");
+        menu = sc.nextInt();
+        switch(menu){
+            case 1:
+                System.out.println("제목을 입력해 주세요 : ");
+                String title = sc.next();
+                ArrayList<Book> result = searchingByTitle(title);
+                if(result.size() != 0){
+                    System.out.println("검색결과 " + result.size() + "개가 있습니다.");
+                    for(int i = 0 ; i < result.size(); i++){
+                        String usable = "대여 가능";
+                        if(result.get(i).usable == false){
+                            usable = "대여 불가";
+                        }
+                        System.out.println(result.get(i).ID + "\t" + result.get(i).ISBN + "\t" + result.get(i).title + "\t" + result.get(i).author + "\t" + result.get(i).publisher + "\t" + usable);
+                    }
+                    popLibraryMenu();
+                }else{
+                    System.out.println("검색결과가 없습니다.");
+                    popLibraryMenu();
+                }
+                break;
+            case 2:
+                for(int i  = 0 ; i < library.size(); i++){
+                    String usable = "대여 가능";
+                    if(library.get(i).usable == false){
+                        usable = "대여 불가";
+                    }
+                    System.out.println(library.get(i).ID + "\t" + library.get(i).ISBN + "\t" + library.get(i).title + "\t" + library.get(i).author + "\t" + library.get(i).publisher + "\t" + usable);
+                }
+                break;
+            case 3:
+                for(int i  = 0 ; i < library.size(); i++){
+                    if(library.get(i).usable == true){
+                        System.out.println(library.get(i).ID + "\t" + library.get(i).ISBN + "\t" + library.get(i).title + "\t" + library.get(i).author + "\t" + library.get(i).publisher + "\t");
+                    }
+                }
+                break;
         }
+    }
+    public ArrayList<Book> searchingByTitle(String title){
+        ArrayList<Book> result = new ArrayList<>();
+        for(int i = 0; i < library.size();i++ ) {
+            if (library.get(i).title.contains(title)) {
+                result.add(library.get(i));
+            }
+        }
+        return result;
     }
     @Override
     public void lending() {

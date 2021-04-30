@@ -3,6 +3,7 @@ package com.example.demo.middleProject;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -56,16 +57,32 @@ public class FileHandler {
     public ArrayList<Book> getBookList(){
         ArrayList<Book> bookList = new ArrayList<Book>();
         try {
-            fr = new FileReader("books.txt");
+            fr = new FileReader("LibraryTable");
             br = new BufferedReader(fr);
+//            fw = new FileWriter("LibraryTable");
+//            bw = new BufferedWriter(fw);
             String readLine = null;
-            while((readLine = br.readLine()) != null){
+            String content = null;
+            Boolean usable = true;
+            ArrayList<String> comments = new ArrayList<>();
+            comments.add("test1");
+            comments.add("test2");
+            ArrayList<String> reservation = new ArrayList<>();
+            while((readLine = br.readLine()) != null) {
                 String arr[] = readLine.split(",");
-                if (arr.length > 0){
-                    Book book = new Book(arr[0],arr[1],arr[2],arr[3],arr[4],arr[5],true,new ArrayList<String>(),new ArrayList<String>());
+                if (arr.length > 0) {
+                    if (arr[6].equals("true")) { usable = true; } else { usable = false; }
+                    comments = compresString(arr[7]);
+                    reservation = compresString(arr[8]);
+                    Book book = new Book(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], usable, comments, reservation);
                     bookList.add(book);
                 }
             }
+//            for(int i = 0; i < bookList.size(); i++){
+//                bw.write(bookList.get(i).ID + "," + bookList.get(i).ISBN + "," + bookList.get(i).title + "," + bookList.get(i).author + "," + bookList.get(i).publisher + "," + bookList.get(i).pubDate + "," + bookList.get(i).usable + "," + emitString(bookList.get(i).comments) + "," + emitString(bookList.get(i).reservation) + ",");
+//                bw.newLine();
+//                bw.flush();
+//            }
             return bookList;
         }catch (IOException e) {
             e.printStackTrace();
@@ -75,6 +92,24 @@ public class FileHandler {
         }
         return bookList;
     }
+    public String emitString(ArrayList<String> strArr){
+        String element = "";
+        for(int i = 0; i < strArr.size(); i++){
+            element +=strArr.get(i) + "'";
+        }
+        return "[" + element + "]";
+    }
+    public ArrayList<String> compresString(String str){
+        ArrayList<String> stringList = new ArrayList<>();
+        str.replace("[","");
+        str.replace("]","");
+        String arr[] = str.split("'");
+        for(int i = 0; i < arr.length; i++){
+            stringList.add(arr[i]);
+        }
+        return stringList;
+    }
+
     public String getTarget() { return target; }
     public void setTarget(String target) { this.target = target; }
 }
