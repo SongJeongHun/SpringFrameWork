@@ -231,9 +231,20 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         }
         System.out.println("예약할 책의 번호를 입력해주세요 :");
         menu = sc.next();
-        library.get(searchingByNum(menu)).reservation.add(currentUser.ID);
-        System.out.println("예약 완료!");
-        popLibraryMenu();
+        if (reservingCheck(searchingByNum(menu))){
+            library.get(searchingByNum(menu)).reservation.add(currentUser.ID);
+            System.out.println("예약 완료!");
+            popLibraryMenu();
+        }else{
+            System.out.println("이미 예약하신 책입니다.");
+            popLibraryMenu();
+        }
+    }
+    public Boolean reservingCheck(int index){
+        for(int i = 0;i <  library.get(index).reservation.size();i++){
+            if(library.get(index).reservation.equals(currentUser.ID)){ return false; }
+        }
+        return true;
     }
     @Override
     public void userJoin() {
