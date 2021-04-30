@@ -115,6 +115,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                     }
                     System.out.println(library.get(i).ID + "\t" + library.get(i).ISBN + "\t" + library.get(i).title + "\t" + library.get(i).author + "\t" + library.get(i).publisher + "\t" + usable);
                 }
+                popLibraryMenu();
                 break;
             case 3:
                 for(int i  = 0 ; i < library.size(); i++){
@@ -122,6 +123,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                         System.out.println(library.get(i).ID + "\t" + library.get(i).ISBN + "\t" + library.get(i).title + "\t" + library.get(i).author + "\t" + library.get(i).publisher + "\t");
                     }
                 }
+                popLibraryMenu();
                 break;
         }
     }
@@ -174,7 +176,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                         if(confirm == 1){
                             System.out.println("대여완료!");
                             library.get(index).usable = false;
-                            userList.get(userIndex).bookID.add(library.get(index).title);
+                            userList.get(userIndex).bookID.add(library.get(index).title + "/" + bookNum);
                             currentUser = userList.get(userIndex);
                             popLibraryMenu();
                             break;
@@ -199,15 +201,39 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     public void returning() {
         int menu;
         System.out.println("----------------도서반납 서비스입니다.----------------");
-        System.out.println("1.도서검색\t2.전체보기\t3.대여가능도서보기");
-
+        if(currentUser.bookID.size() == 0){
+            System.out.println("반납할 책이 없습니다.");
+            popLibraryMenu();
+            return;
+        }
+        for(int i = 0; i < currentUser.bookID.size(); i++){
+            System.out.print("[ " + i + " ] ");
+            System.out.println(currentUser.bookID.get(i));
+        }
+        System.out.println("반납 하실 책의 번호를 입력해주세요(0 ~ 4) : ");
+        menu = sc.nextInt();
+        String bookNum = currentUser.bookID.get(menu).split("/")[1];
+        currentUser.bookID.remove(menu);
+        library.get(searchingByNum(bookNum)).usable = true;
+        System.out.println("반납완료!");
+        popLibraryMenu();
     }
     @Override
     public void reserving() {
-        int menu;
+        String menu;
         System.out.println("----------------도서예약 서비스입니다.----------------");
-        System.out.println("1.도서검색\t2.전체보기\t3.대여가능도서보기");
-
+        System.out.println("1.예약가능 도서확인");
+        for(int i = 0 ; i < library.size(); i++){
+            if(!library.get(i).usable){
+                System.out.print("[ " + library.get(i).ID+ " ] ");
+                System.out.println(library.get(i).ISBN +"\t"+ library.get(i).title + "\t" + library.get(i).author + "\t" + library.get(i).publisher);
+            }
+        }
+        System.out.println("예약할 책의 번호를 입력해주세요 :");
+        menu = sc.next();
+        library.get(searchingByNum(menu)).reservation.add(currentUser.ID);
+        System.out.println("예약 완료!");
+        popLibraryMenu();
     }
     @Override
     public void userJoin() {

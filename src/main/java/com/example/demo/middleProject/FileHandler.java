@@ -102,7 +102,8 @@ public class FileHandler {
         str = str.replace("]","");
         String arr[] = str.split("'");
         for(int i = 0; i < arr.length; i++){
-            stringList.add(arr[i]);
+            if(!arr[i].equals(""))
+                stringList.add(arr[i]);
         }
         return stringList;
     }
