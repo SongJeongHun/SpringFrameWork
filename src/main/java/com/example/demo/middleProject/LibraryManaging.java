@@ -5,4 +5,5 @@ public interface LibraryManaging {
     public void lending();
     public void returning();
     public void reserving();
+    public void info();
 }

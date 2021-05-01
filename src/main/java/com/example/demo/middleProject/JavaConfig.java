@@ -15,10 +15,13 @@ public class JavaConfig {
         lms.setFh(fh());
         setTarget();
         lms.setLibrary(getBookList());
+        lms.setLoop(setLoop());
         lms.setSc(scanner());
         lms.setUserList(getUserList());
         return lms;
     }
+    @Bean
+    public Boolean setLoop(){ return true; }
     @Bean
     public FileHandler fh(){
         return new FileHandler();

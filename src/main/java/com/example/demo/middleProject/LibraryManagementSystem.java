@@ -16,8 +16,9 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     int userIndex;
     Scanner sc;
     FileHandler fh;
-    Boolean loop = true;
+    Boolean loop;
     int currentMenu;
+    public void setLoop(Boolean loop){ this.loop = loop; }
     public void setUserList(ArrayList<User> userList) { this.userList = userList; }
     public void setLibrary(ArrayList<Book> library) { this.library = library;  }
     public void setCurrentUser(User user){ this.currentUser = user; }
@@ -53,7 +54,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     public void popLibraryMenu(){
         fh.setTarget("LibraryTable");
         System.out.println("----------------도서관리 시스템----------------");
-        System.out.println("1.도서검색\t2.도서대여\t3.도서반납\t4.도서예약\t0.종료");
+        System.out.println("1.도서검색\t2.도서대여\t3.도서반납\t4.도서예약\t5.내정보\t0.종료");
         currentMenu = sc.nextInt();
         switch (currentMenu){
             case 1:
@@ -67,6 +68,9 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 break;
             case 4:
                 reserving();
+                break;
+            case 5:
+                info();
                 break;
             case 0:
                 loop = false;
@@ -176,9 +180,13 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                         if(confirm == 1){
                             System.out.println("대여완료!");
                             library.get(index).usable = false;
-                            userList.get(userIndex).bookID.add(library.get(index).title + "/" + bookNum);
+                            userList.get(userIndex).bookID.add(library.get(index).title + "&" + bookNum);
                             currentUser = userList.get(userIndex);
+                            for(int i = 0; i < userList.get(0).bookID.size(); i++){
+                                System.out.println(userList.get(0).bookID.get(i));
+                            }
                             popLibraryMenu();
+                            fh.saveContext(library,userList);
                             break;
                         }else{
                             System.out.println("취소되었습니다.");
@@ -212,16 +220,48 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         }
         System.out.println("반납 하실 책의 번호를 입력해주세요(0 ~ 4) : ");
         menu = sc.nextInt();
-        String bookNum = currentUser.bookID.get(menu).split("/")[1];
+        String bookNum = currentUser.bookID.get(menu).split("&")[1];
         currentUser.bookID.remove(menu);
         library.get(searchingByNum(bookNum)).usable = true;
         System.out.println("반납완료!");
+        returningCheck(bookNum);
+        fh.saveContext(library,userList);
         popLibraryMenu();
+    }
+    public void returningCheck(String bookNum){
+        String userID = "";
+        int index = 0;
+        for(int i = 0; i < library.size(); i++){
+            if(library.get(i).ID.equals(bookNum)){
+                index = i;
+            }
+        }
+        if(library.get(index).reservation.size() > 0){
+            userID = library.get(index).reservation.get(0);
+            library.get(index).reservation.remove(0);
+            library.get(index).usable = false;
+            userList.get(userFind(userID)).bookID.add(library.get(index).title + "&" + bookNum);
+        }else{
+            return;
+        }
+    }
+    public int userFind(String ID){
+        for(int i = 0; i < userList.size(); i++){
+            if(userList.get(i).ID.equals(ID)){
+                return i;
+            }
+        }
+        return 0;
     }
     @Override
     public void reserving() {
         String menu;
         System.out.println("----------------도서예약 서비스입니다.----------------");
+        if(!reserveExistCheck()){
+            System.out.println("에약가능한 책이 없습니다.");
+            popLibraryMenu();
+            return;
+        }
         System.out.println("1.예약가능 도서확인");
         for(int i = 0 ; i < library.size(); i++){
             if(!library.get(i).usable){
@@ -234,15 +274,56 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         if (reservingCheck(searchingByNum(menu))){
             library.get(searchingByNum(menu)).reservation.add(currentUser.ID);
             System.out.println("예약 완료!");
+            for(int i = 0; i < library.get(searchingByNum(menu)).reservation.size(); i++){
+                System.out.println(library.get(searchingByNum(menu)).reservation.get(i));
+            }
+            fh.saveContext(library,userList);
             popLibraryMenu();
         }else{
             System.out.println("이미 예약하신 책입니다.");
             popLibraryMenu();
         }
     }
+
+    @Override
+    public void info() {
+        int menu;
+        System.out.println("----------------내정보 서비스입니다.----------------");
+        System.out.println("1.내정보 조회\t2.내정보 변경");
+        menu = sc.nextInt();
+        switch (menu){
+            case 1:
+                System.out.println("ID = " + currentUser.ID);
+                System.out.println("name = " + currentUser.name);
+                System.out.println("phoneNum = " + currentUser.phoneNum);
+                System.out.println("add = " + currentUser.address);
+                popLibraryMenu();
+                break;
+            case 2:
+                System.out.print("이름을 입력해주세요. : ");
+                currentUser.name = sc.next();
+                System.out.print("휴대폰번호를 입력해주세요. : ");
+                currentUser.phoneNum = sc.next();
+                System.out.print("주소를 입력해주세요. : ");
+                currentUser.address = sc.next();
+                fh.saveContext(library,userList);
+                System.out.println("변경 완료!");
+                popLibraryMenu();
+                break;
+        }
+    }
+
+    public Boolean reserveExistCheck(){
+        for(int i = 0 ; i < library.size(); i++) {
+            if (!library.get(i).usable) {
+                return true;
+            }
+        }
+        return false;
+    }
     public Boolean reservingCheck(int index){
         for(int i = 0;i <  library.get(index).reservation.size();i++){
-            if(library.get(index).reservation.equals(currentUser.ID)){ return false; }
+            if(library.get(index).reservation.get(i).equals(currentUser.ID)){ return false; }
         }
         return true;
     }
