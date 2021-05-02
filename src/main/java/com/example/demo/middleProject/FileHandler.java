@@ -18,7 +18,7 @@ public class FileHandler {
         try{
             fw = new FileWriter(target,true);
             bw = new BufferedWriter(fw);
-            bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + user.bookID + "/");
+            bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + user.bookID);
             bw.newLine();
             bw.flush();
             System.out.println("회원가입 완료!");
@@ -116,7 +116,7 @@ public class FileHandler {
             bw = new BufferedWriter(fw);
             for(int i = 0;i < userList.size(); i++){
                 User user = userList.get(i);
-                bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + user.bookID + "/" + emitString(user.bookID));
+                bw.write(user.ID + "/" + user.password + "/" + user.name + "/" + user.address + "/" + user.phoneNum + "/" + emitString(user.bookID));
                 bw.newLine();
                 bw.flush();
             }
@@ -127,6 +127,5 @@ public class FileHandler {
             try { bw.close(); }catch (IOException e) {}
         }
     }
-    public String getTarget() { return target; }
     public void setTarget(String target) { this.target = target; }
 }

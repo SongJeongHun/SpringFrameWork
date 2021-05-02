@@ -4,9 +4,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Scanner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Component
 public class LibraryManagementSystem implements LibraryManaging, UserManaging, InitializingBean, DisposableBean {
@@ -18,6 +18,8 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
     FileHandler fh;
     Boolean loop;
     int currentMenu;
+    Calendar time = Calendar.getInstance();
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
     public void setLoop(Boolean loop){ this.loop = loop; }
     public void setUserList(ArrayList<User> userList) { this.userList = userList; }
     public void setLibrary(ArrayList<Book> library) { this.library = library;  }
@@ -64,7 +66,9 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 lending();
                 break;
             case 3:
-                returning();
+                try {
+                    returning();
+                }catch (Exception e){ e.printStackTrace();}
                 break;
             case 4:
                 reserving();
@@ -76,6 +80,49 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 loop = false;
                 break;
         }
+    }
+    public ArrayList<Book> searchingByTitle(String title){
+        ArrayList<Book> result = new ArrayList<>();
+        for(int i = 0; i < library.size();i++ ) {
+            if (library.get(i).title.contains(title)) {
+                result.add(library.get(i));
+            }
+        }
+        return result;
+    }
+    public void returningCheck(String bookNum){
+        String userID = "";
+        int index = 0;
+        for(int i = 0; i < library.size(); i++){
+            if(library.get(i).ID.equals(bookNum)){
+                index = i;
+            }
+        }
+        if(library.get(index).reservation.size() > 0){
+            userID = library.get(index).reservation.get(0);
+            library.get(index).reservation.remove(0);
+            library.get(index).usable = false;
+            userList.get(userFind(userID)).bookID.add(library.get(index).title + "&" + bookNum + "&" + sdf.format(time.getTime()));
+        }else{
+            return;
+        }
+    }
+    public int userFind(String ID){
+        for(int i = 0; i < userList.size(); i++){
+            if(userList.get(i).ID.equals(ID)){
+                return i;
+            }
+        }
+        return 0;
+    }
+    public int searchingByNum(String num){
+        int result = -1;
+        for(int i = 0; i < library.size();i++ ) {
+            if (library.get(i).ID.equals(num)) {
+                result = i;
+            }
+        }
+        return result;
     }
     @Override
     public void destroy() throws Exception {
@@ -131,24 +178,6 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 break;
         }
     }
-    public ArrayList<Book> searchingByTitle(String title){
-        ArrayList<Book> result = new ArrayList<>();
-        for(int i = 0; i < library.size();i++ ) {
-            if (library.get(i).title.contains(title)) {
-                result.add(library.get(i));
-            }
-        }
-        return result;
-    }
-    public int searchingByNum(String num){
-        int result = -1;
-        for(int i = 0; i < library.size();i++ ) {
-            if (library.get(i).ID.equals(num)) {
-                result = i;
-            }
-        }
-        return result;
-    }
     @Override
     public void lending() {
         int menu;
@@ -178,13 +207,12 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                         System.out.println("1.확인\t2.취소");
                         confirm = sc.nextInt();
                         if(confirm == 1){
-                            System.out.println("대여완료!");
                             library.get(index).usable = false;
-                            userList.get(userIndex).bookID.add(library.get(index).title + "&" + bookNum);
+                            userList.get(userIndex).bookID.add(library.get(index).title + "&" + bookNum + "&" + sdf.format(time.getTime()));
                             currentUser = userList.get(userIndex);
-                            for(int i = 0; i < userList.get(0).bookID.size(); i++){
-                                System.out.println(userList.get(0).bookID.get(i));
-                            }
+                            time.add(Calendar.DATE,14);
+                            System.out.println("대여완료! , 반납일은 " + sdf.format(time.getTime()) + " 입니다.");
+                            time = Calendar.getInstance();
                             popLibraryMenu();
                             fh.saveContext(library,userList);
                             break;
@@ -206,7 +234,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         }
     }
     @Override
-    public void returning() {
+    public void returning() throws ParseException {
         int menu;
         System.out.println("----------------도서반납 서비스입니다.----------------");
         if(currentUser.bookID.size() == 0){
@@ -214,44 +242,30 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
             popLibraryMenu();
             return;
         }
+
         for(int i = 0; i < currentUser.bookID.size(); i++){
             System.out.print("[ " + i + " ] ");
-            System.out.println(currentUser.bookID.get(i));
+            System.out.print(currentUser.bookID.get(i));
+            Date lendDate = sdf.parse(currentUser.bookID.get(i).split("&")[2]);
+            Calendar lendday = Calendar.getInstance();
+            lendday.setTime(lendDate);
+            lendday.add(Calendar.DATE,14);
+            if (lendday.getTime().after(time.getTime())){
+                System.out.println("\t [ 정상 ]");
+            }else{
+                System.out.println("\t [ 연체 ]");
+            }
         }
         System.out.println("반납 하실 책의 번호를 입력해주세요(0 ~ 4) : ");
         menu = sc.nextInt();
         String bookNum = currentUser.bookID.get(menu).split("&")[1];
+
         currentUser.bookID.remove(menu);
         library.get(searchingByNum(bookNum)).usable = true;
         System.out.println("반납완료!");
         returningCheck(bookNum);
         fh.saveContext(library,userList);
         popLibraryMenu();
-    }
-    public void returningCheck(String bookNum){
-        String userID = "";
-        int index = 0;
-        for(int i = 0; i < library.size(); i++){
-            if(library.get(i).ID.equals(bookNum)){
-                index = i;
-            }
-        }
-        if(library.get(index).reservation.size() > 0){
-            userID = library.get(index).reservation.get(0);
-            library.get(index).reservation.remove(0);
-            library.get(index).usable = false;
-            userList.get(userFind(userID)).bookID.add(library.get(index).title + "&" + bookNum);
-        }else{
-            return;
-        }
-    }
-    public int userFind(String ID){
-        for(int i = 0; i < userList.size(); i++){
-            if(userList.get(i).ID.equals(ID)){
-                return i;
-            }
-        }
-        return 0;
     }
     @Override
     public void reserving() {
@@ -284,7 +298,6 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
             popLibraryMenu();
         }
     }
-
     @Override
     public void info() {
         int menu;
@@ -312,7 +325,6 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
                 break;
         }
     }
-
     public Boolean reserveExistCheck(){
         for(int i = 0 ; i < library.size(); i++) {
             if (!library.get(i).usable) {
@@ -346,6 +358,7 @@ public class LibraryManagementSystem implements LibraryManaging, UserManaging, I
         System.out.print("주소를 입력해주세요. : ");
         address = sc.next();
         User user = new User(ID,password,name,phoneNum,address,owner);
+        userList.add(user);
         fh.userJoin(user);
         popUserMenu();
     }
